@@ -33,9 +33,10 @@ class TailwindRenderer implements RendererInterface
     {
         $html = '';
 
-        // Search bar
-        if ($table->isSearchable()) {
-            $html .= $this->renderSearch($table);
+        // Filter toolbar (includes search if searchable)
+        $filters = $table->getFilters();
+        if (!empty($filters) || $table->isSearchable()) {
+            $html .= $this->renderFilterToolbar($table, $filters);
         }
 
         // Table container
@@ -93,6 +94,34 @@ class TailwindRenderer implements RendererInterface
             </div>
         </div>
         HTML;
+    }
+
+    protected function renderFilterToolbar(TableInterface $table, array $filters): string
+    {
+        $html = '<div class="mb-4 flex flex-wrap items-center gap-4">';
+
+        // Search input
+        if ($table->isSearchable()) {
+            $value = htmlspecialchars($table->getSearchQuery() ?? '');
+            $html .= '<div class="flex-1 min-w-[200px]"><div class="relative">';
+            $html .= '<input type="text" name="search" value="' . $value . '" placeholder="Search..." class="input w-full pl-10">';
+            $html .= '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fas fa-search"></i></span>';
+            $html .= '</div></div>';
+        }
+
+        // Filter dropdowns
+        foreach ($filters as $filter) {
+            if (!$filter->isVisible()) {
+                continue;
+            }
+            $html .= '<div class="min-w-[150px]">';
+            $html .= '<label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">' . htmlspecialchars($filter->getLabel() ?? '') . '</label>';
+            $html .= $filter->render();
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+        return $html;
     }
 
     public function renderHeader(array $columns, array $options = []): string
