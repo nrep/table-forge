@@ -65,18 +65,28 @@ class SelectFilter extends Filter
 
     public function render(): string
     {
-        $name = htmlspecialchars($this->name);
+        $inputName = $this->queryParam ?? ('filter[' . $this->name . ']');
+        $name = htmlspecialchars($inputName);
         $multiple = $this->multiple ? 'multiple' : '';
         $searchable = $this->searchable ? 'data-searchable="true"' : '';
 
-        $html = '<select name="filter[' . $name . ']' . ($this->multiple ? '[]' : '') . '" class="input" ' . $multiple . ' ' . $searchable . '>';
+        $html = '<select name="' . $name . ($this->multiple ? '[]' : '') . '" class="input w-full" ' . $multiple . ' ' . $searchable . '>';
 
         if ($this->placeholder && !$this->multiple) {
             $html .= '<option value="">' . htmlspecialchars($this->placeholder) . '</option>';
         }
 
         foreach ($this->options as $optValue => $optLabel) {
-            $html .= '<option value="' . htmlspecialchars((string) $optValue) . '">' . htmlspecialchars($optLabel) . '</option>';
+            $isSelected = false;
+            // Check if value matches default (which should be populated from GET by the caller)
+            if ($this->multiple && is_array($this->default)) {
+                $isSelected = in_array((string)$optValue, array_map('strval', $this->default));
+            } else {
+                $isSelected = (string)$this->default === (string)$optValue;
+            }
+            
+            $selected = $isSelected ? 'selected' : '';
+            $html .= '<option value="' . htmlspecialchars((string) $optValue) . '" ' . $selected . '>' . htmlspecialchars($optLabel) . '</option>';
         }
 
         $html .= '</select>';

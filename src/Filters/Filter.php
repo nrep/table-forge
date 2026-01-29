@@ -18,6 +18,7 @@ class Filter implements FilterInterface
     protected ?Closure $queryUsing = null;
     protected ?Closure $indicateUsing = null;
     protected bool $visible = true;
+    protected ?string $queryParam = null;
 
     public function __construct(string $name)
     {
@@ -33,6 +34,12 @@ class Filter implements FilterInterface
     public function label(string $label): static
     {
         $this->label = $label;
+        return $this;
+    }
+
+    public function queryParam(string $param): static
+    {
+        $this->queryParam = $param;
         return $this;
     }
 
@@ -58,6 +65,11 @@ class Filter implements FilterInterface
     {
         $this->visible = $visible;
         return $this;
+    }
+
+    public function getQueryParam(): ?string
+    {
+        return $this->queryParam;
     }
 
     public function getName(): string
@@ -109,7 +121,8 @@ class Filter implements FilterInterface
 
     public function render(): string
     {
-        return '<input type="text" name="filter[' . htmlspecialchars($this->name) . ']" class="input" placeholder="' . htmlspecialchars($this->label ?? '') . '">';
+        $inputName = $this->queryParam ?? ('filter[' . $this->name . ']');
+        return '<input type="text" name="' . htmlspecialchars($inputName) . '" class="input" placeholder="' . htmlspecialchars($this->label ?? '') . '">';
     }
 
     public function toArray(): array

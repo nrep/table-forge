@@ -21,6 +21,7 @@ class Table implements TableInterface
     protected array $headerActions = [];
     protected array $data = [];
     protected bool $paginated = false;
+    protected bool $alreadyPaginated = false;
     protected int $perPage = 25;
     protected int $currentPage = 1;
     protected int $totalItems = 0;
@@ -119,6 +120,12 @@ class Table implements TableInterface
     {
         $this->paginated = true;
         $this->perPage = $perPage;
+        return $this;
+    }
+
+    public function alreadyPaginated(bool $val = true): static
+    {
+        $this->alreadyPaginated = $val;
         return $this;
     }
 
@@ -296,7 +303,7 @@ class Table implements TableInterface
         }
 
         // Apply pagination
-        if ($this->paginated) {
+        if ($this->paginated && !$this->alreadyPaginated) {
             $offset = ($this->currentPage - 1) * $this->perPage;
             $data = array_slice($data, $offset, $this->perPage);
         }
